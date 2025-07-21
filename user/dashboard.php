@@ -89,7 +89,7 @@ if (!isset($_SESSION['email'])) {
   const form = document.getElementById("caseForm");
   const table = document.getElementById("animalTable");
 
-  const API_KEY = "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"; // EXPOSED ONLY FOR TESTING
+  const API_KEY = ""; // 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
 
 async function getAISuggestion(promptText) {
   try {
