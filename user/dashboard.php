@@ -91,47 +91,6 @@ if (!isset($_SESSION['email'])) {
 
   const API_KEY = ""; 
 
-async function getAISuggestion(promptText) {
-  try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "llama3-70b-8192", // Groq's official supported model
-        messages: [
-                    {
-                        role: "system",
-                        content: "You are a livestock veterinary assistant. Respond in short, direct, practical suggestions in Tagalog. Avoid long explanations.",
-                    },
-                    { role: "user", content: promptText }
-                    ],
-
-        temperature: 0.7,
-        max_tokens: 500,
-        top_p: 1,
-      }),
-    });
-
-    const data = await res.json();
-
-    // DEBUG LOG (optional): Uncomment to inspect full response
-    // console.log(JSON.stringify(data, null, 2));
-
-    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-      return data.choices[0].message.content;
-    } else {
-      return "Sorry, the AI could not generate a response.";
-    }
-  } catch (err) {
-    console.error("Error from AI:", err);
-    return "There was an error contacting the AI service.";
-  }
-}
-
-
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
