@@ -1,3 +1,4 @@
+  const API_KEY = ""; 
 async function getAISuggestion(promptText) {
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {

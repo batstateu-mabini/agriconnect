@@ -89,7 +89,7 @@ if (!isset($_SESSION['email'])) {
   const form = document.getElementById("caseForm");
   const table = document.getElementById("animalTable");
 
-  const API_KEY = ""; 
+
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
