@@ -1,10 +1,11 @@
 <?php
 session_start();
 if (isset($_SESSION['email'])) {
-    header("Location: user/dashboard.php");
+    header("Location: dashboard/dashboard.php");
     exit;
 }
-require_once 'db.php';
+
+require_once 'db.php'; // ✅ Include the database connection
 
 $error = "";
 
@@ -18,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($user && password_verify($password, $user['password_hash'])) {
         $_SESSION['email'] = $user['email'];
-        header("Location: user/dashboard.php");
+        header("Location: dashboard/dashboard.php");
         exit;
     } else {
         $error = "Invalid email or password.";
@@ -31,20 +32,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta charset="UTF-8">
     <title>AgriVet - Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1032&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             height: 100vh;
         }
-
         .card {
             background-color: rgba(255, 255, 255, 0.95);
             box-shadow: 0 4px 15px rgba(0, 100, 0, 0.3);
         }
-
         .logo {
             height: 70px;
         }
@@ -78,8 +76,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </form>
     </div>
 </div>
-
-<!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

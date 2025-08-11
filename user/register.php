@@ -3,7 +3,7 @@ require_once 'db.php';
 session_start();
 
 if (isset($_SESSION['email'])) {
-    header("Location: user/dashboard.php");
+    header("Location: dashboard/dashboard.php");
     exit;
 }
 
