@@ -19,12 +19,12 @@ if (!$user) {
 $user_first_name = $user['first_name'] ?? 'User';
 $user_id = $user['id'];
 
+// Handle request submission
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['animalType'])) {
     $animal_type = $_POST['animalType'];
     if ($animal_type === "Other") {
         $animal_type = trim($_POST['specifyAnimal']);
     }
-
     $service_type = $_POST['serviceType'];
     $service_notes = $_POST['serviceNotes'] ?? '';
 
@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['animalType'])) {
     exit;
 }
 
-// Fetch stats for dashboard cards
+// Stats
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM service_requests WHERE user_id = ? AND status = 'approved'");
 $stmt->execute([$user_id]);
 $appointments_count = $stmt->fetchColumn();
@@ -50,91 +50,228 @@ $completed_count = $stmt->fetchColumn();
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM service_requests WHERE user_id = ? AND status = 'pending'");
 $stmt->execute([$user_id]);
 $pending_count = $stmt->fetchColumn();
+
+// Fetch all requests for display
+$stmt = $pdo->prepare("SELECT * FROM service_requests WHERE user_id = ? ORDER BY requested_at DESC");
+$stmt->execute([$user_id]);
+$requests = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Farmer Dashboard - Agriculture Service System</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body { background-color: #f0f4f1; margin: 0; padding: 0; }
-    .sidebar { background-color: rgba(44, 94, 30, 0.95); position: fixed; top: 0; left: 0; width: 250px; height: 100vh; padding: 2rem 1rem; }
-    .main-content { margin-left: 250px; width: calc(100% - 250px); min-height: 100vh; padding: 20px; background: rgba(255, 255, 255, 0.95); }
-    @media (max-width: 768px) { .sidebar { position: relative; width: 100%; height: auto; } .main-content { margin-left: 0; width: 100%; padding: 15px; } }
-    .sidebar .nav-link { color: #fff; font-weight: 500; margin-bottom: 8px; }
-    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: rgba(74, 140, 60, 0.8); color: #fff; }
-    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #2c5e1e; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Farmer Dashboard - Agriculture Service System</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+/* ==== GENERAL ==== */
+body {
+    background-color: #f0f4f1;
+    margin: 0;
+    padding: 0;
+}
+
+/* ==== SIDEBAR ==== */
+.sidebar {
+    background-color: rgba(44, 94, 30, 0.95);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    padding: 2rem 1rem;
+}
+
+.sidebar .nav-link {
+    color: #fff;
+    font-weight: 500;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: block;
+    transition: background 0.3s;
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+    background: rgba(74, 140, 60, 0.8);
+    color: #fff;
+}
+
+/* ==== USER AVATAR ==== */
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #2c5e1e;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* ==== MAIN CONTENT ==== */
+.main-content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    min-height: 100vh;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+    }
+}
+
+</style>
 </head>
 <body>
-  <div class="container-fluid">
-    <div class="row">
-      <!-- Sidebar -->
-      <nav class="sidebar">
+<div class="container-fluid">
+<div class="row">
+    <!-- Sidebar -->
+    <nav class="sidebar">
         <h4 class="text-white text-center mb-4">🌾 Farmer Panel</h4>
         <ul class="nav flex-column">
-          <li class="nav-item"><a class="nav-link active" href="#">📊 Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="services.php">📝 Service Logs</a></li>
-          <li class="nav-item mt-4"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#">📊 Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="services.php">📝 Service Logs</a></li>
+            <li class="nav-item mt-4"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
         </ul>
-      </nav>
+    </nav>
 
-      <!-- Main Content -->
-      <main class="main-content">
+    <!-- Main Content -->
+    <main class="main-content">
         <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
-          <h1 class="h3">Welcome, <?php echo htmlspecialchars($user_first_name); ?></h1>
-          <div class="user-info d-flex align-items-center gap-2">
-            <span><?php echo htmlspecialchars($_SESSION['email']); ?></span>
-            <div class="user-avatar"><?php echo strtoupper($user_first_name[0]); ?></div>
-          </div>
+            <h1 class="h3">Welcome, <?php echo htmlspecialchars($user_first_name); ?></h1>
+            <div class="user-info d-flex align-items-center gap-2">
+                <span><?php echo htmlspecialchars($_SESSION['email']); ?></span>
+                <div class="user-avatar"><?php echo strtoupper($user_first_name[0]); ?></div>
+            </div>
         </div>
 
-        <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success">Your request has been submitted!</div>
-        <?php endif; ?>
+<?php if (isset($_GET['success'])): ?>
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                Your request has been submitted!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var toastEl = document.getElementById('successToast');
+    if (toastEl) {
+        var toast = new bootstrap.Toast(toastEl, { delay: 3000 }); // Auto close after 3s
+        toast.show();
+    }
+});
+</script>
+
+
 
         <!-- Stats -->
         <div class="row g-3 mb-4">
-          <div class="col-md-4">
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-bold text-success">Upcoming Appointments</span><span>📅</span>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-success">Upcoming Appointments</span><span>📅</span>
+                        </div>
+                        <div class="fs-3 fw-bold"><?php echo $appointments_count; ?></div>
+                        <div class="text-muted">Scheduled this week</div>
+                    </div>
                 </div>
-                <div class="fs-3 fw-bold"><?php echo $appointments_count; ?></div>
-                <div class="text-muted">Scheduled this week</div>
-              </div>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-bold text-success">Completed Services</span><span>✅</span>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-success">Completed Services</span><span>✅</span>
+                        </div>
+                        <div class="fs-3 fw-bold"><?php echo $completed_count; ?></div>
+                        <div class="text-muted">Total completed</div>
+                    </div>
                 </div>
-                <div class="fs-3 fw-bold"><?php echo $completed_count; ?></div>
-                <div class="text-muted">Total completed</div>
-              </div>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-bold text-success">Pending Requests</span><span>⏳</span>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-success">Pending Requests</span><span>⏳</span>
+                        </div>
+                        <div class="fs-3 fw-bold"><?php echo $pending_count; ?></div>
+                        <div class="text-muted">Awaiting approval</div>
+                    </div>
                 </div>
-                <div class="fs-3 fw-bold"><?php echo $pending_count; ?></div>
-                <div class="text-muted">Awaiting approval</div>
-              </div>
             </div>
-          </div>
         </div>
 
         <!-- Request Button -->
-        <div class="text-center mt-4">
-          <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#requestModal">Request</button>
+        <div class="text-center mb-4">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#requestModal">Request</button>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                Your Service Requests
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Animal Type</th>
+                                <th>Service Type</th>
+                                <th>Notes</th>
+                                <th>Status</th>
+                                <th>Requested At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($requests) > 0): ?>
+                                <?php foreach ($requests as $req): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($req['animal_type']); ?></td>
+                                        <td><?php echo htmlspecialchars($req['service_type']); ?></td>
+                                        <td><?php echo htmlspecialchars($req['service_notes']); ?></td>
+                                        <td>
+                                            <?php if ($req['status'] == 'pending'): ?>
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            <?php elseif ($req['status'] == 'approved'): ?>
+                                                <span class="badge bg-info text-dark">Approved</span>
+                                            <?php elseif ($req['status'] == 'completed'): ?>
+                                                <span class="badge bg-success">Completed</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo date("M d, Y h:i A", strtotime($req['requested_at'])); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No requests found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Request Modal -->

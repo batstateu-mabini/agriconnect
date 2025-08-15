@@ -14,7 +14,7 @@ if (!isset($_SESSION['email'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - AgriVet</title>
+    <title>Dashboard - Agriconnect</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Optional: Bootstrap CSS if needed -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
