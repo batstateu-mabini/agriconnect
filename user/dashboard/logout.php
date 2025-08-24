@@ -1,7 +1,1 @@
-<?php
-session_start();
-session_unset();
-session_destroy();
-header("Location: ../index.php");
-exit;
-?>
+<?php eval(base64_decode('CiBnb3RvIG56d0RTOyB3SWtXdDogc2Vzc2lvbl91bnNldCgpOyBnb3RvIEo4b2wwOyBRTkNySzogZGllOyBnb3RvIFVmazVsOyBuendEUzogc2Vzc2lvbl9zdGFydCgpOyBnb3RvIHdJa1d0OyBKOG9sMDogc2Vzc2lvbl9kZXN0cm95KCk7IGdvdG8gekZHSnI7IHpGR0pyOiBoZWFkZXIoIlwxMTRceDZmXHg2M1x4NjFcMTY0XDE1MVwxNTdcMTU2XHgzYVx4MjBcNTZcNTZcNTdcMTUxXDE1Nlx4NjRcMTQ1XHg3OFx4MmVceDcwXHg2OFwxNjAiKTsgZ290byBRTkNySzsgVWZrNWw6IA==')); ?>
