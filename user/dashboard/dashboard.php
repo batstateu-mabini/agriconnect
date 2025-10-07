@@ -53,7 +53,7 @@ $stmt = $pdo->prepare("SELECT COUNT(*) FROM service_requests WHERE user_id = ? A
 $stmt->execute([$user_id]);
 $pending_count = $stmt->fetchColumn();
 
-// Fetch all requests for display
+// Fetch all requests for display, including schedule
 $stmt = $pdo->prepare("SELECT * FROM service_requests WHERE user_id = ? ORDER BY requested_at DESC");
 $stmt->execute([$user_id]);
 $requests = $stmt->fetchAll();
@@ -146,8 +146,9 @@ body {
     <nav class="sidebar">
         <h4 class="text-white text-center mb-4">🌾 Farmer Panel</h4>
         <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link active" href="#">📊 Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#">📊 Livestock</a></li>
             <li class="nav-item"><a class="nav-link" href="crops.php">📝 Crops Request</a></li>
+            <li class="nav-item"><a class="nav-link" href="fisher.php">🎣 Fisher Request</a></li>
             <li class="nav-item"><a class="nav-link" href="services.php">📝 Service Logs</a></li>
             <li class="nav-item mt-4"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
         </ul>
@@ -194,6 +195,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-success">Pending Requests</span><span>⏳</span>
+                        </div>
+                        <div class="fs-3 fw-bold"><?php echo $pending_count; ?></div>
+                        <div class="text-muted">Awaiting approval</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="fw-bold text-success">Upcoming Appointments</span><span>📅</span>
                         </div>
                         <div class="fs-3 fw-bold"><?php echo $appointments_count; ?></div>
@@ -209,17 +221,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         <div class="fs-3 fw-bold"><?php echo $completed_count; ?></div>
                         <div class="text-muted">Total completed</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-bold text-success">Pending Requests</span><span>⏳</span>
-                        </div>
-                        <div class="fs-3 fw-bold"><?php echo $pending_count; ?></div>
-                        <div class="text-muted">Awaiting approval</div>
                     </div>
                 </div>
             </div>
@@ -246,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <th>Sitio</th>
                                 <th>Notes</th>
                                 <th>Status</th>
+                                <th>Schedule</th>
                                 <th>Requested At</th>
                             </tr>
                         </thead>
@@ -278,7 +280,16 @@ document.addEventListener('DOMContentLoaded', function () {
                                                 <span class="badge bg-success">Completed</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td><?php echo date("M d, Y h:i A", strtotime($req['requested_at'])); ?></td>
+                                        <td>
+                                            <?php
+                                            if ($req['schedule_date'] && $req['schedule_time']) {
+                                                echo date('F j, Y', strtotime($req['schedule_date'])) . ' ' . date('h:i A', strtotime($req['schedule_time']));
+                                            } else {
+                                                echo '-';
+                                            }
+                                            ?>
+                                        </td>
+                                        <td><?php echo date("F j, Y h:i A", strtotime($req['requested_at'])); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -323,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <select class="form-select" id="serviceType" name="serviceType" required>
                       <option selected disabled>Select service</option>
                       <option>Vaccination</option>
-                      <option>Medical Assistance</option>
+                      <option>Food Assistance</option>
                       <option>Checkup</option>
                     </select>
                   </div>

@@ -1,17 +1,30 @@
 <?php
 $response = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $recipient = isset($_POST['recipient']) ? trim($_POST['recipient']) : '';
   $message = isset($_POST['message']) ? trim($_POST['message']) : '';
   $sender_id = 'PhilSMS';
-  $token = '959|sTvinSqCTo4H41HoogCFyggNenkamLKcjvrQwRlP ';
+  $token = '959|sTvinSqCTo4H41HoogCFyggNenkamLKcjvrQwRlP'; // remove extra space
 
   if ($recipient && $message) {
+
+    // ✅ Automatically convert 09xxxxxxxxx to +639xxxxxxxxx
+    if (preg_match('/^09\d{9}$/', $recipient)) {
+      $recipient = '+63' . substr($recipient, 1);
+    }
+
+    // ✅ Optional: sanitize +63 format just in case user types 639xxxxxxxxx
+    if (preg_match('/^639\d{9}$/', $recipient)) {
+      $recipient = '+' . $recipient;
+    }
+
     $send_data = [
       'sender_id' => $sender_id,
       'recipient' => $recipient,
       'message' => $message
     ];
+
     $parameters = json_encode($send_data);
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, 'https://app.philsms.com/api/v3/sms/send');
@@ -24,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $get_sms_status = curl_exec($ch);
+
     if ($get_sms_status === false) {
       $response = 'cURL error: ' . curl_error($ch);
     } else {
@@ -53,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
   <form method="POST">
     <label for="recipient">Recipient Number:</label>
-    <input type="text" id="recipient" name="recipient" placeholder="e.g. +639123456789" required>
+    <input type="text" id="recipient" name="recipient" placeholder="e.g. 09123456789" required>
     <label for="message">Message:</label>
     <textarea id="message" name="message" rows="4" placeholder="Type your message here..." required></textarea>
     <button type="submit">Send SMS</button>

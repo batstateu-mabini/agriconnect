@@ -11,7 +11,7 @@ $error = "";
 $success = false;
 
 // Initialize values
-$firstName = $lastName = $option = $relativeName = $relationship = "";
+$firstName = $lastName = $option = $relativeName = $relationship = $phone = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     function clean_input($data) {
@@ -25,6 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $option = clean_input($_POST['option'] ?? '');
     $relativeName = clean_input($_POST['relativeName'] ?? '');
     $relationship = clean_input($_POST['relationship'] ?? '');
+    $phone = clean_input($_POST['phone'] ?? '');
     $email = clean_input($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirmPassword'] ?? '';
@@ -33,6 +34,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (empty($relativeName) || empty($relationship)) {
             $error = "Relative name and relationship are required.";
         }
+    }
+
+    if (!$error && !preg_match('/^09\d{9}$/', $phone)) {
+        $error = "Phone number must be 11 digits and start with 09 (e.g., 09109198735).";
     }
 
     if (!$error && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -58,8 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!$error) {
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("INSERT INTO users 
-            (first_name, last_name, barangay, sitio, role, relative_name, relationship, email, password_hash)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            (first_name, last_name, barangay, sitio, role, relative_name, relationship, email, phone, password_hash)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $firstName,
             $lastName,
@@ -69,6 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $option === 'relative' ? $relativeName : null,
             $option === 'relative' ? $relationship : null,
             $email,
+            $phone,
             $passwordHash
         ]);
         $success = true;
@@ -190,6 +196,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </div>
                     <div class="mb-3">
                         <input type="text" name="sitio" class="form-control" placeholder="Sitio" required value="<?= htmlspecialchars($_POST['sitio'] ?? '') ?>">
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" name="phone" class="form-control" placeholder="Phone Number (e.g. 09109198735)" required pattern="09[0-9]{9}" maxlength="11" value="<?= htmlspecialchars($phone) ?>">
                     </div>
                     <!-- Relative fields removed from personal info section -->
 

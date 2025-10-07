@@ -133,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <!-- Left Side: Login Form -->
         <div class="col-md-6 login-form">
             <div class="text-center mb-3">
-                <img src="https://www.zamboanga.com/z/images/2/28/Mabini_Batangas_seal_logo.png" alt="Mabini Logo" style="height: 70px;">
+                <img src="https://www.mabiniagriportal.com/img/mabini.png" alt="Mabini Logo" style="height: 70px;">
                 <h1 class="text-success mt-2">Mabini Agriconnect</h1>
             </div>
 

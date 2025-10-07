@@ -20,21 +20,9 @@ $user_first_name = $user['first_name'] ?? 'User';
 $user_id = $user['id'];
 
 // === Search & Filter ===
-$query = "SELECT * FROM service_requests WHERE user_id = :user_id";
-$params = ['user_id' => $user_id];
 
-if (!empty($_GET['search'])) {
-    $query .= " AND service_type LIKE :search";
-    $params['search'] = '%' . $_GET['search'] . '%';
-}
-if (!empty($_GET['status'])) {
-    $query .= " AND status = :status";
-    $params['status'] = $_GET['status'];
-}
-
-$query .= " ORDER BY requested_at DESC";
-$stmt = $pdo->prepare($query);
-$stmt->execute($params);
+$stmt = $pdo->prepare("SELECT * FROM service_requests WHERE user_id = ? ORDER BY requested_at DESC");
+$stmt->execute([$user_id]);
 $services = $stmt->fetchAll();
 ?>
 
@@ -125,8 +113,9 @@ body {
     <nav class="sidebar">
         <h4 class="text-white text-center mb-4">🌾 Farmer Panel</h4>
         <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link" href="dashboard.php">📊 Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="dashboard.php">📊 Livestock</a></li>
             <li class="nav-item"><a class="nav-link" href="crops.php">📝 Crops Request</a></li>
+            <li class="nav-item"><a class="nav-link" href="fisher.php">🎣 Fisher Request</a></li>
             <li class="nav-item"><a class="nav-link active" href="#">📝 Service Logs</a></li>
             <li class="nav-item mt-4"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
         </ul>
@@ -142,28 +131,13 @@ body {
             </div>
         </div>
 
-        <!-- Search & Filter -->
-        <form method="GET" class="row g-2 mb-3">
-            <div class="col-md-4">
-                <input type="text" name="search" class="form-control" placeholder="Search service type..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-            </div>
-            <div class="col-md-4">
-                <select name="status" class="form-select">
-                    <option value="">All Status</option>
-                    <option value="pending" <?= (($_GET['status'] ?? '') == 'pending') ? 'selected' : '' ?>>Pending</option>
-                    <option value="approved" <?= (($_GET['status'] ?? '') == 'approved') ? 'selected' : '' ?>>Approved</option>
-                    <option value="completed" <?= (($_GET['status'] ?? '') == 'completed') ? 'selected' : '' ?>>Completed</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-success">Filter</button>
-                <a href="services.php" class="btn btn-secondary">Reset</a>
-            </div>
-        </form>
+
 
         <!-- Service Logs Table -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-success text-white">Your Service History</div>
+        <!-- Combined Logs Table -->
+        <!-- Service Requests Table -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">Service Requests</div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-striped mb-0">
@@ -177,29 +151,147 @@ body {
                             </tr>
                         </thead>
                         <tbody>
-                        <?php if (count($services) > 0): ?>
-                            <?php foreach ($services as $service): ?>
-                                <tr>
-                                    <td><?= date("M d, Y", strtotime($service['requested_at'])) ?></td>
-                                    <td><?= htmlspecialchars($service['animal_type']) ?></td>
-                                    <td><?= htmlspecialchars($service['service_type']) ?></td>
-                                    <td>
-                                        <?php if ($service['status'] == 'pending'): ?>
-                                            <span class="badge bg-warning text-dark">Pending</span>
-                                        <?php elseif ($service['status'] == 'approved'): ?>
-                                            <span class="badge bg-info text-dark">Approved</span>
-                                        <?php elseif ($service['status'] == 'completed'): ?>
-                                            <span class="badge bg-success">Completed</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?= htmlspecialchars($service['service_notes']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php
+                        if (count($services) > 0) {
+                            foreach ($services as $service) {
+                                echo '<tr>';
+                                echo '<td>' . date("M d, Y", strtotime($service['requested_at'])) . '</td>';
+                                echo '<td>' . htmlspecialchars($service['animal_type']) . '</td>';
+                                echo '<td>' . htmlspecialchars($service['service_type']) . '</td>';
+                                echo '<td>';
+                                if ($service['status'] == 'pending') {
+                                    echo '<span class="badge bg-warning text-dark">Pending</span>';
+                                } elseif ($service['status'] == 'approved') {
+                                    echo '<span class="badge bg-info text-dark">Approved</span>';
+                                } elseif ($service['status'] == 'completed') {
+                                    echo '<span class="badge bg-success">Completed</span>';
+                                } else {
+                                    echo '<span class="badge bg-secondary">Unknown</span>';
+                                }
+                                echo '</td>';
+                                echo '<td>' . htmlspecialchars($service['service_notes']) . '</td>';
+                                echo '</tr>';
+                            }
+                        } else {
+                            echo '<tr><td colspan="5" class="text-center text-muted">No service requests found.</td></tr>';
+                        }
+                        ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crop Requests Table -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">Crop Requests</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
                             <tr>
-                                <td colspan="5" class="text-center text-muted">No service history found.</td>
+                                <th>Date</th>
+                                <th>Crops & Quantity</th>
+                                <th>Status</th>
+                                <th>Notes</th>
                             </tr>
-                        <?php endif; ?>
+                        </thead>
+                        <tbody>
+                        <?php
+                        $stmt = $pdo->prepare("SELECT * FROM crop_requests WHERE user_id = ? ORDER BY id DESC");
+                        $stmt->execute([$user_id]);
+                        $crop_requests = $stmt->fetchAll();
+                        if (count($crop_requests) > 0) {
+                            foreach ($crop_requests as $req) {
+                                echo '<tr>';
+                                echo '<td>' . (isset($req['requested_at']) ? date("M d, Y", strtotime($req['requested_at'])) : '') . '</td>';
+                                $cropsArr = explode(',', $req['crops']);
+                                $out = [];
+                                foreach ($cropsArr as $c) {
+                                    $parts = explode(':', $c);
+                                    if (count($parts) == 2) {
+                                        $out[] = htmlspecialchars($parts[0]) . ' <span class="badge bg-secondary">' . htmlspecialchars($parts[1]) . '</span>';
+                                    } else {
+                                        $out[] = htmlspecialchars($c);
+                                    }
+                                }
+                                echo '<td>' . implode(', ', $out) . '</td>';
+                                echo '<td>';
+                                if ($req['status'] == 'pending') {
+                                    echo '<span class="badge bg-warning text-dark">Pending</span>';
+                                } elseif ($req['status'] == 'approved') {
+                                    echo '<span class="badge bg-info text-dark">Approved</span>';
+                                } elseif ($req['status'] == 'completed') {
+                                    echo '<span class="badge bg-success">Completed</span>';
+                                } else {
+                                    echo '<span class="badge bg-secondary">Unknown</span>';
+                                }
+                                echo '</td>';
+                                echo '<td>' . htmlspecialchars($req['notes']) . '</td>';
+                                echo '</tr>';
+                            }
+                        } else {
+                            echo '<tr><td colspan="4" class="text-center text-muted">No crop requests found.</td></tr>';
+                        }
+                        ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fisher Requests Table -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">Fisher Requests</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Fishers & Quantity</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        $stmt = $pdo->prepare("SELECT * FROM fisher_requests WHERE user_id = ? ORDER BY id DESC");
+                        $stmt->execute([$user_id]);
+                        $fisher_requests = $stmt->fetchAll();
+                        if (count($fisher_requests) > 0) {
+                            foreach ($fisher_requests as $req) {
+                                echo '<tr>';
+                                echo '<td>' . (isset($req['requested_at']) ? date("M d, Y", strtotime($req['requested_at'])) : '') . '</td>';
+                                $fishersArr = explode(',', $req['fishers']);
+                                $out = [];
+                                foreach ($fishersArr as $c) {
+                                    $parts = explode(':', $c);
+                                    if (count($parts) == 2) {
+                                        $out[] = htmlspecialchars($parts[0]) . ' <span class="badge bg-secondary">' . htmlspecialchars($parts[1]) . '</span>';
+                                    } else {
+                                        $out[] = htmlspecialchars($c);
+                                    }
+                                }
+                                echo '<td>' . implode(', ', $out) . '</td>';
+                                echo '<td>';
+                                if ($req['status'] == 'pending') {
+                                    echo '<span class="badge bg-warning text-dark">Pending</span>';
+                                } elseif ($req['status'] == 'approved') {
+                                    echo '<span class="badge bg-info text-dark">Approved</span>';
+                                } elseif ($req['status'] == 'completed') {
+                                    echo '<span class="badge bg-success">Completed</span>';
+                                } else {
+                                    echo '<span class="badge bg-secondary">Unknown</span>';
+                                }
+                                echo '</td>';
+                                echo '<td>' . htmlspecialchars($req['notes']) . '</td>';
+                                echo '</tr>';
+                            }
+                        } else {
+                            echo '<tr><td colspan="4" class="text-center text-muted">No fisher requests found.</td></tr>';
+                        }
+                        ?>
                         </tbody>
                     </table>
                 </div>

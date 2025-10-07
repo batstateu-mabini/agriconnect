@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Service Logs - Agriculture Service System</title>
+<title>Crop Requests - Agriculture Service System</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <style>
 /* ==== GENERAL ==== */
@@ -135,8 +135,9 @@ body {
     <nav class="sidebar">
         <h4 class="text-white text-center mb-4">🌾 Farmer Panel</h4>
         <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link" href="dashboard.php">📊 Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="dashboard.php">📊 Livestock</a></li>
             <li class="nav-item"><a class="nav-link active" href="#">📝 Crops Request</a></li>
+            <li class="nav-item"><a class="nav-link" href="fisher.php">🎣 Fisher Request</a></li>
             <li class="nav-item"><a class="nav-link" href="services.php">📝 Service Logs</a></li>
             <li class="nav-item mt-4"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
         </ul>

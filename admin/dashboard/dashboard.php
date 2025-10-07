@@ -112,6 +112,7 @@ body {
         <h4 class="text-white text-center mb-4">🌾 Admin Panel</h4>
         <ul class="nav flex-column">
             <li class="nav-item"><a class="nav-link active" href="#">📊 Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="livestock.php">📊 Livestock</a></li>
             <li class="nav-item mt-4"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
         </ul>
     </nav>
