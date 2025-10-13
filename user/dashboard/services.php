@@ -21,6 +21,19 @@ $user_id = $user['id'];
 
 // === Search & Filter ===
 
+
+// Get counts for service requests by status for this user
+$stmt = $pdo->prepare("SELECT status, COUNT(*) as cnt FROM service_requests WHERE user_id = ? GROUP BY status");
+$stmt->execute([$user_id]);
+$status_counts = [
+    'pending' => 0,
+    'approved' => 0,
+    'completed' => 0
+];
+foreach ($stmt->fetchAll() as $row) {
+    $status_counts[$row['status']] = (int)$row['cnt'];
+}
+
 $stmt = $pdo->prepare("SELECT * FROM service_requests WHERE user_id = ? ORDER BY requested_at DESC");
 $stmt->execute([$user_id]);
 $services = $stmt->fetchAll();
@@ -128,6 +141,34 @@ body {
             <div class="user-info d-flex align-items-center gap-2">
                 <span><?= htmlspecialchars($_SESSION['email']) ?></span>
                 <div class="user-avatar"><?= strtoupper($user_first_name[0]) ?></div>
+            </div>
+        </div>
+
+        <!-- Service Request Status Counts -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-2">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <span class="badge bg-warning text-dark mb-1">Pending</span>
+                        <h4><?= $status_counts['pending'] ?></h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-2">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <span class="badge bg-info text-dark mb-1">Approved</span>
+                        <h4><?= $status_counts['approved'] ?></h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-2">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <span class="badge bg-success mb-1">Completed</span>
+                        <h4><?= $status_counts['completed'] ?></h4>
+                    </div>
+                </div>
             </div>
         </div>
 

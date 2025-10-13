@@ -1,3 +1,9 @@
+-- Create the database
+CREATE DATABASE mao;
+
+-- Select the database to use
+USE mao;
+
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100),
@@ -44,6 +50,8 @@ CREATE TABLE crop_requests (
     quantity VARCHAR(50) NOT NULL,
     notes TEXT,
     status ENUM('pending', 'approved', 'completed') DEFAULT 'pending',
+    schedule_date DATE DEFAULT NULL,
+    schedule_time TIME DEFAULT NULL,
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -56,6 +64,8 @@ CREATE TABLE fisher_requests (
     quantity VARCHAR(50) NOT NULL,
     notes TEXT,
     status ENUM('pending', 'approved', 'completed') DEFAULT 'pending',
+    schedule_date DATE DEFAULT NULL,
+    schedule_time TIME DEFAULT NULL,
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

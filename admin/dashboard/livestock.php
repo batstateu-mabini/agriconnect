@@ -187,6 +187,8 @@ body {
         <ul class="nav flex-column">
             <li class="nav-item"><a class="nav-link" href="dashboard.php">📊 Dashboard</a></li>
             <li class="nav-item"><a class="nav-link active" href="#">📊 Livestock</a></li>
+            <li class="nav-item"><a class="nav-link" href="crops.php">🌾 Crop Requests</a></li>
+            <li class="nav-item"><a class="nav-link" href="fisher.php">🐟 Fisher Requests</a></li>
             <li class="nav-item mt-4"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
         </ul>
     </nav>
